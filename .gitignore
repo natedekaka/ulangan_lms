@@ -1,0 +1,23 @@
+# Ignore uploads and cache
+uploads/*
+!uploads/index.php
+!uploads/.htaccess
+!uploads/.gitkeep
+
+# Ignore docker data
+migrations/*
+!migrations/.gitkeep
+!migrations/*.sql
+
+# Ignore system files
+.DS_Store
+Thumbs.db
+
+# Ignore local dev overrides
+docker-compose.override.yml
+
+# Ignore IDE
+.idea/
+.vscode/
+*.swp
+*.swo

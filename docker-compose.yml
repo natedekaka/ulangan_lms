@@ -1,0 +1,87 @@
+services:
+  app:
+    build: .
+    container_name: lms-app
+    ports:
+      - "9329:80"
+    environment:
+      DB_HOST: db:3306
+      DB_NAME: ulangan_lms
+      DB_USER: root
+      DB_PASS: rootpass
+    volumes:
+      - .:/var/www/html:z
+    depends_on:
+      - db
+      - redis
+    networks:
+      - lms-net
+    restart: unless-stopped
+
+
+  redis:
+    image: docker.io/library/redis:7-alpine
+    container_name: lms-redis
+    command: redis-server --appendonly no --maxmemory 256mb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    networks:
+      - lms-net
+    restart: unless-stopped
+
+
+  db:
+    image: docker.io/library/mysql:8.0
+    container_name: lms-db
+    command: >
+      --max_connections=500
+      --innodb_buffer_pool_size=1G
+      --innodb_log_file_size=256M
+      --innodb_flush_log_at_trx_commit=2
+      --wait_timeout=180
+      --interactive_timeout=180
+      --thread_cache_size=100
+      --tmp_table_size=256M
+      --max_heap_table_size=256M
+      --table_open_cache=4000
+      --sort_buffer_size=4M
+      --join_buffer_size=4M
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: ulangan_lms
+      MYSQL_USER: user
+      MYSQL_PASSWORD: pass123
+      TZ: Asia/Makassar
+    ports:
+      - "3315:3306"
+    volumes:
+      - ./migrations:/docker-entrypoint-initdb.d:ro
+      - lms-dbdata:/var/lib/mysql:z
+    networks:
+      - lms-net
+    restart: unless-stopped
+
+
+  phpmyadmin:
+    image: docker.io/library/phpmyadmin:latest
+    container_name: lms-pma
+    ports:
+      - "9330:80"
+    environment:
+      PMA_HOST: db
+      PMA_ARBITRARY: 1
+    depends_on:
+      - db
+    networks:
+      - lms-net
+    restart: unless-stopped
+
+volumes:
+  lms-dbdata:
+
+networks:
+  lms-net:
+    driver: bridge

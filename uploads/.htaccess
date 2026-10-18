@@ -1,0 +1,21 @@
+# Folder uploads: hanya untuk file gambar.
+# Cegah eksekusi skrip apa pun di sini (defense-in-depth).
+
+# Nonaktifkan eksekusi PHP (bila mod_php aktif)
+<IfModule mod_php.c>
+    php_flag engine off
+</IfModule>
+<IfModule mod_php7.c>
+    php_flag engine off
+</IfModule>
+<IfModule mod_php8.c>
+    php_flag engine off
+</IfModule>
+
+# Tolak akses ke file skrip/berbahaya
+<FilesMatch "\.(php|phtml|php3|php4|php5|php7|phps|pl|py|cgi|asp|aspx|jsp|sh|shtml|htaccess)$">
+    Require all denied
+</FilesMatch>
+
+# Jangan tampilkan daftar direktori & jangan jalankan CGI
+Options -Indexes -ExecCGI
