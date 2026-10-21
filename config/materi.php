@@ -119,5 +119,20 @@ function materiTandaiDibaca($conn, $id_materi, $nis, $nama = null, $kelas = null
     return $ok;
 }
 
+/** Hapus progres baca materi siswa untuk sebuah ujian (agar wajib baca ulang saat mengulang). */
+function materiResetProgress($conn, $id_ujian, $nis) {
+    $stmt = $conn->prepare("
+        DELETE p FROM materi_progress p
+        JOIN materi m ON m.id = p.id_materi
+        WHERE m.id_ujian = ? AND p.nis = ?
+    ");
+    if (!$stmt) return false;
+    $stmt->bind_param("is", $id_ujian, $nis);
+    $ok = $stmt->execute();
+    $stmt->close();
+    return $ok;
+}
+
+
 initMateriTables($conn);
 ?>

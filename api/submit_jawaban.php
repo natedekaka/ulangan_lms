@@ -451,6 +451,12 @@ function handleSubmitFinal($conn, $input) {
         // Commit transaction
         $conn->commit();
 
+        // Jika belum tuntas dan masih boleh mengulang, hapus progres baca materi
+        // agar siswa wajib membaca materi lagi pada percobaan berikutnya.
+        if (empty($tuntas) && tuntasBolehUlang($conn, $id_ujian, $nis)) {
+            materiResetProgress($conn, $id_ujian, $nis);
+        }
+
         $response['success'] = true;
         $response['message'] = 'Jawaban berhasil disubmit';
         $response['skor'] = $total_skor;

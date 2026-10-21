@@ -160,7 +160,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_ujian'])) {
                 
                 $conn->query("DO RELEASE_LOCK('$lock_name')");
                 $conn->commit();
-                
+
+                if ($hasil_tuntas && empty($hasil_tuntas['tuntas']) && tuntasBolehUlang($conn, $id_ujian, $nis)) {
+                    materiResetProgress($conn, $id_ujian, $nis);
+                }
+
                 $submit_success = true;
             }
         } catch (Exception $e) {
