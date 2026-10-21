@@ -612,23 +612,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_ujian'])) {
             border-color: #667eea;
             background: #f8f9ff;
         }
-        .option-label input:checked + .option-letter {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+        .option-label:has(input:checked) {
+            border-color: #667eea;
+            background: #f8f9ff;
         }
-        .option-letter {
-            background: #f0f0f0;
-            color: #555;
-            width: 28px;
-            height: 28px;
-            border-radius: 6px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
+        .option-label input:checked ~ .option-content {
+            color: #667eea;
             font-weight: 600;
-            font-size: 0.85rem;
-            margin-right: 12px;
-            transition: all 0.2s;
         }
         .option-content {
             flex: 1;
@@ -1644,7 +1634,7 @@ function initExamFeatures() {
                 for (const key in options) {
                     const opt = options[key];
                     const checked = answered === key ? ' checked' : '';
-                    html += '<label class=option-label><input type=radio name=jawaban_' + soalId + ' value=' + key + checked + ' class=d-none onchange=updateProgress()><span class=option-letter>' + key.toUpperCase() + '</span><span class=option-content>';
+                    html += '<label class=option-label><input type=radio name=jawaban_' + soalId + ' value=' + key + checked + ' class=d-none onchange=updateProgress()><span class=option-content>';
                     if (opt.t) html += '<span class=opsi-text>' + opt.t.replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</span>';
                     if (opt.i) html += '<img src="uploads/' + opt.i + '" class="opsi-img" alt="Opsi ' + key.toUpperCase() + '" onerror="this.style.display=\'none\'">';
                     html += '</span></label>';
