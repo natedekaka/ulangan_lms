@@ -1,5 +1,6 @@
 <?php
 require_once '../config/database.php';
+require_once '../config/tuntas.php';
 
 if (!isset($_GET['ujian']) || empty($_GET['ujian'])) {
     die("Parameter tidak valid");
@@ -40,6 +41,8 @@ $stmt->execute();
 $result_soal = $stmt->get_result();
 $total_soal = $result_soal->fetch_assoc()['total_soal'];
 $stmt->close();
+
+$total_poin_maks = tuntasTotalPoinMaks($conn, $id_ujian);
 
 $nama_file = 'Rekap_Nilai_' . str_replace(' ', '_', $ujian['judul_ujian']) . '_' . date('Ymd_His');
 
@@ -183,7 +186,7 @@ echo '<?xml version="1.0" encoding="UTF-8"?>
    </Style>
   </Styles>
   <Worksheet ss:Name="Rekap Nilai">
-   <Table ss:ExpandedColumnCount="8" ss:ExpandedRowCount="'.(count($hasil_list) + 10).'" x:FullColumns="1" x:FullRows="1" ss:DefaultColumnWidth="100" ss:DefaultRowHeight="20">
+   <Table ss:ExpandedColumnCount="9" ss:ExpandedRowCount="'.(count($hasil_list) + 10).'" x:FullColumns="1" x:FullRows="1" ss:DefaultColumnWidth="100" ss:DefaultRowHeight="20">
     <Column ss:Index="1" ss:Width="50"/>
     <Column ss:Index="2" ss:Width="120"/>
     <Column ss:Index="3" ss:Width="200"/>
@@ -192,19 +195,20 @@ echo '<?xml version="1.0" encoding="UTF-8"?>
     <Column ss:Index="6" ss:Width="80"/>
     <Column ss:Index="7" ss:Width="80"/>
     <Column ss:Index="8" ss:Width="150"/>
+    <Column ss:Index="9" ss:Width="80"/>
     
     <Row ss:Height="25">
-     <Cell ss:MergeAcross="7" ss:StyleID="Title">
+     <Cell ss:MergeAcross="8" ss:StyleID="Title">
       <Data ss:Type="String">'.htmlspecialchars($ujian['judul_ujian']).'</Data>
      </Cell>
     </Row>
     <Row ss:Height="18">
-     <Cell ss:MergeAcross="7" ss:StyleID="Subtitle">
+     <Cell ss:MergeAcross="8" ss:StyleID="Subtitle">
       <Data ss:Type="String">Total Soal: '.$total_soal.' | Tanggal Export: '.date('d F Y, H:i:s').'</Data>
      </Cell>
     </Row>
     <Row ss:Height="5">
-     <Cell ss:MergeAcross="7"><Data ss:Type="String"></Data></Cell>
+     <Cell ss:MergeAcross="8"><Data ss:Type="String"></Data></Cell>
     </Row>
     
     <Row ss:Height="25">
@@ -214,6 +218,7 @@ echo '<?xml version="1.0" encoding="UTF-8"?>
      <Cell ss:StyleID="Header"><Data ss:Type="String">Kelas</Data></Cell>
      <Cell ss:StyleID="Header"><Data ss:Type="String">Skor Asli</Data></Cell>
      <Cell ss:StyleID="Header"><Data ss:Type="String">Skor Akhir</Data></Cell>
+     <Cell ss:StyleID="Header"><Data ss:Type="String">Nilai</Data></Cell>
      <Cell ss:StyleID="Header"><Data ss:Type="String">Potongan</Data></Cell>
      <Cell ss:StyleID="Header"><Data ss:Type="String">Waktu Submit</Data></Cell>
     </Row>';
@@ -229,6 +234,8 @@ foreach ($hasil_list as $hasil) {
         $penalty = min($hasil['jumlah_pelanggaran'] * 10, $hasil['total_skor'] * 0.5);
         $skor_asli = $hasil['total_skor'] + $penalty;
     }
+    
+    $nilai = tuntasHitungNilai((int)$hasil['total_skor'], $total_poin_maks);
     
     if ($no == 1 && $persentase == 100) {
         $row_style = 'Rank1';
@@ -254,6 +261,7 @@ foreach ($hasil_list as $hasil) {
      <Cell ss:StyleID="'.$row_style.'"><Data ss:Type="String">'.htmlspecialchars($hasil['kelas']).'</Data></Cell>
      <Cell ss:StyleID="'.$row_style.'"><Data ss:Type="Number">'.$skor_asli.'</Data></Cell>
      <Cell ss:StyleID="'.$row_style.'"><Data ss:Type="Number">'.$hasil['total_skor'].'</Data></Cell>
+     <Cell ss:StyleID="'.$row_style.'"><Data ss:Type="Number">'.round($nilai).'</Data></Cell>
      <Cell ss:StyleID="'.$row_style.'"><Data ss:Type="Number">'.$penalty.'</Data></Cell>
      <Cell ss:StyleID="'.$row_style.'"><Data ss:Type="String">'.$waktu.'</Data></Cell>
     </Row>';
@@ -263,7 +271,7 @@ foreach ($hasil_list as $hasil) {
 if (count($hasil_list) === 0) {
     echo '
     <Row ss:Height="30">
-     <Cell ss:MergeAcross="7" ss:StyleID="DataCenter">
+     <Cell ss:MergeAcross="8" ss:StyleID="DataCenter">
       <Data ss:Type="String">Belum ada peserta yang menyelesaikan ujian</Data>
      </Cell>
     </Row>';
