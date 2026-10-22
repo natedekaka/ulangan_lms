@@ -141,7 +141,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($ujian_list)) {
         }
 
         $stmt = $conn->prepare("INSERT INTO materi (id_ujian, judul, konten, urutan) VALUES (?, ?, ?, ?)");
-        $stmt->bind_param("isii", $id_ujian, $judul, $konten, $urutan);
+        $stmt->bind_param("issi", $id_ujian, $judul, $konten, $urutan);
         $ok = $stmt->execute();
         $stmt->close();
 
@@ -161,7 +161,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($ujian_list)) {
         }
 
         $stmt = $conn->prepare("UPDATE materi SET judul = ?, konten = ?, urutan = ? WHERE id = ? AND id_ujian = ?");
-        $stmt->bind_param("isiii", $judul, $konten, $urutan, $id_materi, $id_ujian);
+        $stmt->bind_param("ssiii", $judul, $konten, $urutan, $id_materi, $id_ujian);
         $ok = $stmt->execute();
         $stmt->close();
 
