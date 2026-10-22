@@ -1,6 +1,7 @@
 <?php
 require_once 'config/database.php';
 require_once 'config/init_sekolah.php';
+require_once 'config/tuntas.php';
 
 $sekolah = getKonfigurasiSekolah($conn);
 
@@ -56,9 +57,13 @@ while ($row = $result->fetch_assoc()) {
         $skor_awal = $row['total_skor'] + $penalty;
     }
     
+    $total_poin_maks = tuntasTotalPoinMaks($conn, (int)$row['id_ujian']);
+    $nilai_persen = tuntasHitungNilai((int)$row['total_skor'], $total_poin_maks);
     $row['skor_awal'] = $skor_awal;
     $row['penalty'] = $penalty;
     $row['jumlah_pelanggaran'] = $jumlah_pelanggaran;
+    $row['total_poin_maks'] = $total_poin_maks;
+    $row['nilai_persen'] = (int)round($nilai_persen);
     $hasil_list[] = $row;
 }
 
@@ -234,6 +239,7 @@ $conn->close();
                                 <th>Ujian</th>
                                 <th>Skor Asli</th>
                                 <th>Skor Akhir</th>
+                                <th>Nilai</th>
                                 <th>Pengurangan</th>
                                 <th>Pelanggaran</th>
                                 <th>Tanggal</th>
@@ -262,6 +268,12 @@ $conn->close();
                                     <span class="skor-badge skor-akhir">
                                         <?= $hasil['total_skor'] ?>
                                     </span>
+                                </td>
+                                <td>
+                                    <span class="skor-badge skor-awal">
+                                        <?= $hasil['nilai_persen'] ?>
+                                    </span>
+                                    <br><small class="text-muted"><?= $hasil['total_skor'] ?>/<?= $hasil['total_poin_maks'] ?></small>
                                 </td>
                                 <td>
                                     <?php if ($hasil['penalty'] > 0): ?>
@@ -296,8 +308,9 @@ $conn->close();
                     <small class="text-muted">
                         <i class="bi bi-info-circle me-1"></i>
                         <strong>Keterangan:</strong> 
-                        Skor Asli = Skor sebelum dikurangi pelanggaran. 
+                        Skor Asli = Skor sebelum dikurangi pelanggaran.
                         Skor Akhir = Skor yang didapat setelah pengurangan (maksimal 50% dari skor asli).
+                        Nilai = (Skor Akhir / Total Poin) x 100.
                         Pengurangan = 10 poin per pelanggaran fullscreen.
                     </small>
                 </div>
